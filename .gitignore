@@ -1,0 +1,6 @@
+.env
+/tmp/*
+!/tmp/.keep
+.terraform
+*.tfstate*
+*.tfvars

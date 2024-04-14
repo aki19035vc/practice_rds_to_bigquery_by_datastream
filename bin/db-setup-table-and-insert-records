@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -eu
+
+usage () {
+  cat <<EOF
+usage: $(basename "$0") [OPTION]...
+  -e VALUE    [Required] environment
+  -t VALUE    [Required] tabel name
+  -h          display help
+EOF
+
+  exit 1
+}
+
+main() {
+  local readonly app_name="orion"
+  local app_env=""
+  local table_name=""
+
+  while getopts "e:t:h" OPT; do
+    case "$OPT" in
+      e)
+        readonly app_env="${OPTARG}"
+        ;;
+      t)
+        readonly table_name="${OPTARG}"
+        ;;
+      h|*)
+        usage
+        ;;
+    esac
+  done
+
+  ([[ "${app_env}" == "sandbox" ]] && [[ -n "${table_name}" ]])|| usage
+
+  local readonly database_config=$(db-config -e "${app_env}")
+  local readonly database_hostname=$(echo "${database_config}" | jq -r '.DATABASE_HOST')
+  local readonly database_username=$(echo "${database_config}" | jq -r '.DATABASE_USER')
+  local readonly database_password=$(echo "${database_config}" | jq -r '.DATABASE_PASSWORD')
+
+  mysql -h "${database_hostname}" -u "${database_username}" -p"${database_password}" <<EOF
+CREATE DATABASE IF NOT EXISTS ${app_name};
+
+CREATE TABLE IF NOT EXISTS ${app_name}.${table_name} (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  col_string VARCHAR(255),
+  col_int INT,
+  col_bool BOOLEAN,
+  col_datetime DATETIME
+);
+
+INSERT INTO ${app_name}.${table_name} (col_string, col_int, col_bool, col_datetime) VALUES
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW()),
+  (CONCAT('string', FLOOR(RAND() * 1000)), FLOOR(RAND() * 1000), IF(RAND() > 0.5, TRUE, FALSE), NOW());
+EOF
+}
+
+main $@

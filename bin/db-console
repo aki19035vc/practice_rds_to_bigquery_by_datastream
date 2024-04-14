@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -eu
+
+usage () {
+  cat <<EOF
+usage: $(basename "$0") [OPTION]...
+  -e VALUE    [Required] environment
+  -h          display help
+EOF
+
+  exit 1
+}
+
+main() {
+  local app_env=""
+
+  while getopts "e:h" OPT; do
+    case "$OPT" in
+      e)
+        readonly app_env="${OPTARG}"
+        ;;
+      h|*)
+        usage
+        ;;
+    esac
+  done
+
+  [[ "${app_env}" == "sandbox" ]] || usage
+
+  local readonly database_config=$(db-config -e "${app_env}")
+  local readonly database_hostname=$(echo "${database_config}" | jq -r '.DATABASE_HOST')
+  local readonly database_username=$(echo "${database_config}" | jq -r '.DATABASE_USER')
+  local readonly database_password=$(echo "${database_config}" | jq -r '.DATABASE_PASSWORD')
+
+  mysql -h "${database_hostname}" -u "${database_username}" -p"${database_password}"
+}
+
+main $@

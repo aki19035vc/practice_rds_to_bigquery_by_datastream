@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -eu
+
+usage () {
+  cat <<EOF
+usage: $(basename "$0") [OPTION]...
+  -e VALUE    [Required] environment
+  -h          display help
+EOF
+
+  exit 1
+}
+
+main() {
+  local readonly app_name="orion"
+  local app_env=""
+
+  while getopts "e:h" OPT; do
+    case "$OPT" in
+      e)
+        readonly app_env="${OPTARG}"
+        ;;
+      h|*)
+        usage
+        ;;
+    esac
+  done
+
+  [[ "${app_env}" == "sandbox" ]] || usage
+
+  local readonly secrets_arn=$(
+    aws secretsmanager list-secrets --query "SecretList[?Tags[?Key=='App'&&Value=='${app_name}'] && Tags[?Key=='Env'&&Value=='${app_env}']]" \
+      | jq -r '.[0].ARN'
+  )
+
+  aws secretsmanager get-secret-value --secret-id "${secrets_arn}" | jq -r ".SecretString"
+}
+
+main $@

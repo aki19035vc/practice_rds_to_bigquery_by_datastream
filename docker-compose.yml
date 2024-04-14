@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      # AWS CLIv2: https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/getting-started-install.html
+      # AWS CLI SSM plugin: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
+      # Terrafrom: https://developer.hashicorp.com/terraform/downloads
+      args:
+        - AWS_CLI_URL=${AWS_CLI_URL:-https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip}
+        - AWS_CLI_SSM_URL=${AWS_CLI_SSM_URL:-https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb}
+        - TERRAFORM_URL=${TERRAFORM_URL:-https://releases.hashicorp.com/terraform/1.8.0/terraform_1.8.0_linux_arm64.zip}
+    image: orion
+    volumes:
+      - .:/orion
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS}
+      - TF_VAR_project_id=${TF_VAR_project_id}
