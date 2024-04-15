@@ -1,10 +1,12 @@
-# orion
+# practice_rds_to_bigquery_by_datastream
 
 AWS上のMySQLを、Google CloudのDatasreamを利用してBigQueryにレプリケーションする仕組みを検証するリポジトリです。
 
 MySQL(AWS RDS) -> Datasream(Google Cloud) -> BigQuery(Google Cloud)
 
 参考: https://cloud.google.com/datastream/docs/configure-amazon-rds-mysql?hl=ja
+
+リソースに名前をつけやすくするために、アプリケーション名は`orion` としています。名前に深い意味はありません。
 
 terraformを使用してインフラを構築しています。Dockerさえあれば再現可能です。
 
